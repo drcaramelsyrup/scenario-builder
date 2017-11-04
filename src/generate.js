@@ -1,12 +1,13 @@
-const Improv = require('improv');
-const yaml = require('js-yaml');
-const fs = require('fs-jetpack');
+import ELImprov from './el-improv';
+import Improv from 'improv';
+import yaml from 'js-yaml';
+import fs from 'fs-jetpack';
 
 // Load data
 const grammarData = yaml.load(fs.read('grammar.yaml'));
 
 // Create generator
-const generator = new Improv(grammarData, {
+const generator = new ELImprov(grammarData, {
 	// Allow for preconditions
 	filters: [Improv.filters.mismatchFilter()],
 	// Allow for postconditions
