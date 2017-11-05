@@ -1,10 +1,16 @@
 {
 	"name": "scenario-builder",
 	"version": "0.0.1",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/drcaramelsyrup/scenario-builder"
+	},
 	"scripts": {
-		"build": "babel src -d dist",
+		"build": "babel src -d lib",
 		"start": "node dist/generate.js",
-		"test": "mocha"
+		"test": "npm run build && mocha --require babel-register",
+		"flow": "flow"
 	},
 	"dependencies": {
 		"fs-jetpack": "^1.2.0",
@@ -13,6 +19,10 @@
 	},
 	"devDependencies": {
 		"babel-cli": "^6.26.0",
-		"babel-preset-env": "^1.6.1"
+		"babel-preset-env": "^1.6.1",
+		"babel-preset-flow": "^6.23.0",
+		"babel-register": "^6.26.0",
+		"flow-bin": "^0.58.0",
+		"mocha": "^4.0.1"
 	}
 }
