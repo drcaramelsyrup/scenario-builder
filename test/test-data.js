@@ -38,9 +38,22 @@ const satisfiesTests = [
 	{
 		name: "Toby is ecstatic!",
 		statements: ['toby.mood.ecstatic'],
-		satisfies: [['toby.mood', true], ['toby.mood.ecstatic', true], ['toby.mood.sad', false]]
+		satisfies: [['toby.mood', true], ['toby.mood.ecstatic', true], 
+			['toby.mood.sad', false], ['toby', true]]
+	}, {
+		name: "Toby is forgetful and ecstatic",
+		statements: ['toby.mood.ecstatic', 'toby.quality.forgetful.30'],
+		satisfies: [['toby.quality', true], ['toby.mood.ecstatic', true], ['toby.quality.forgetful.30', true]]
+	}, {
+		name: "Toby has mammals as pets",
+		statements: ['toby.has.pet.dog', 'toby.has.pet.cat'],
+		satisfies: [['toby.has.pet', true], ['toby.has.pet.dog', true], ['toby.has.pet.cat', true],
+			['toby.has.pet.fish', false]]
+	}, {
+		name: "Toby is forgetful as a mood only",
+		statements: ['toby.mood.forgetful'],
+		satisfies: [['toby.forgetful', false], ['toby.mood.forgetful', true]]
 	}
 ];
 
-
-export { claimTests };
+export { claimTests, satisfiesTests };

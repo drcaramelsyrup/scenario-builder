@@ -138,56 +138,88 @@ describe('ELLogicModel', () => {
 				});
 			});
 		});
-				
-		
-	});
-});
-
-describe('#satisfies()', () => {
-	const initValue = 'toby';
-	let toby = new ELTree(initValue);
-
-	const reset = () => {
-		toby = new ELTree(initValue);
-		testInit(toby, initValue);
-	};
-
-	beforeEach(reset);
-
-	it('should only allow is (.), exclusive-is (!), or empty () as operator types', () => {
-		let newNode = new ELNode();
-		expect(newNode.operator).to.be.a('string').and.to.equal('');
-		newNode.operator = '=';
-		toby.root.children.push(newNode);
-		const invalidSatisfy = () => { satisfies(toby, 'toby.arbitrary.statement'); };
-		expect(invalidSatisfy).to.throw();
 	});
 
-	it('should not have an operator without a child and vice versa', () => {
-		toby.root.children.push(new ELNode());
-		const invalidSatisfy = () => { satisfies(toby, 'toby.arbitrary'); };
-		expect(invalidSatisfy, 'empty operator with children').to.throw();
-		reset();
-		expect(toby.root.children).to.have.lengthOf(0);
-		toby.root.operator = '.';
-		expect(invalidSatisfy, 'valid operator without children').to.throw();
-	});
 
-	it('should satisfy a simple statement', () => {
-		let moodNode = new ELNode('mood');
-		toby.root.operator = '.';
-		toby.root.children.push(moodNode);
-		moodNode.operator = '.';
-		moodNode.children.push(new ELNode('beaming'));
-		expect(satisfies(toby, 'toby.mood.beaming')).to.be.true;
-	});
+	describe('#satisfies()', () => {
+		const initValue = 'toby';
+		let toby = new ELTree(initValue);
 
-	satisfiesTests.forEach((data) => {
-		it('should satisfy \''+data.name+'\''), () => {
-			data.statements.forEach((statement) => { claim(toby, statement); });
-			data.satisfies.forEach((test) => { expect(satisfies(toby, test[0])).to.equal(test[1]); });
+		const reset = () => {
+			toby = new ELTree(initValue);
+			testInit(toby, initValue);
 		};
+
+		const constructMood = (moodNode) => {
+			let initialNode = new ELNode('mood');
+			toby.root.operator = '.';
+			toby.root.children.push(initialNode);
+			initialNode.operator = '.';
+			initialNode.children.push(moodNode);
+		};
+
+		beforeEach(reset);
+
+		it('should only allow is (.), exclusive-is (!), or empty () as operator types', () => {
+			let newNode = new ELNode();
+			expect(newNode.operator).to.be.a('string').and.to.equal('');
+			newNode.operator = '=';
+			toby.root.children.push(newNode);
+			const invalidSatisfy = () => { satisfies(toby, 'toby.arbitrary.statement'); };
+			expect(invalidSatisfy).to.throw();
+		});
+
+		it('should not have an operator without a child and vice versa', () => {
+			toby.root.children.push(new ELNode());
+			const invalidSatisfy = () => { satisfies(toby, 'toby.arbitrary'); };
+			expect(invalidSatisfy, 'empty operator with children').to.throw();
+			reset();
+			expect(toby.root.children).to.have.lengthOf(0);
+			toby.root.operator = '.';
+			expect(invalidSatisfy, 'valid operator without children').to.throw();
+		});
+
+		it('should satisfy a simple statement', () => {
+			const moodNode = new ELNode('beaming');
+			constructMood(moodNode);
+			expect(satisfies(toby, 'toby.mood.beaming')).to.be.true;
+		});
+
+		satisfiesTests.forEach((data) => {
+			reset();
+			it('should satisfy \''+data.name+'\'', () => {
+				data.statements.forEach((statement) => { claim(toby, statement); });
+				data.satisfies.forEach((test) => { expect(satisfies(toby, test[0])).to.equal(test[1]); });
+			});
+		});
+
+		it('should handle a simple exclusive operator statement', () => {
+			const moodNode = new ELNode('cheerful');
+			constructMood(moodNode);
+			expect(satisfies(toby, 'toby.mood.cheerful')).to.be.true;
+			expect(moodNode).to.have.a.property('operator', '');
+			moodNode.operator = '!';
+			moodNode.children.push(new ELNode('40'));
+			expect(satisfies(toby, 'toby.mood.cheerful!40')).to.be.true;
+			expect(satisfies(toby, 'toby.mood.cheerful.40')).to.be.true;
+			moodNode.children.push(new ELNode('30'));
+			expect(() => { satisfies(toby, 'toby.mood.cheerful!30'); }).to.throw();
+		});
+
+		it('should not satisfy exclusive statements on non-exclusive models', () => {
+			const moodNode = new ELNode('confused');
+			constructMood(moodNode);
+			expect(satisfies(toby, 'toby.mood.confused')).to.be.true;
+			moodNode.operator = '.';
+			moodNode.children.push(new ELNode('befuddled'));
+			moodNode.children.push(new ELNode('angry'));
+			expect(satisfies(toby, 'toby.mood.confused!befuddled'), 'only befuddled').to.be.false;
+			expect(satisfies(toby, 'toby.mood.confused!angry'), 'only angry').to.be.false;
+			moodNode.children.unshift();
+			expect(satisfies(toby, 'toby.mood.confused!angry'), 'only angry, even with one child').to.be.false;
+		});
 	});
-	// exclusive operator
+
 });
+
 

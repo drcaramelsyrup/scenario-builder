@@ -76,8 +76,11 @@ const childWithValue = (node: ELNode, childValue: string = '') => {
 	if (!(node.operator === '.' || node.operator === '!' || node.operator === ''))
 		throw new Error('Invalid node \''+node.value+'\' with unrecognized operator \''+node.operator+'\'');
 
-	if (node.children.length === 0 && node.operator === '.' || node.operator === '!')
+	if (node.children.length === 0 && (node.operator === '.' || node.operator === '!'))
 		throw new Error('Invalid node \''+node.value+'\' with operator \''+node.operator+'\' and no children');
+
+	if (node.operator === '!' && node.children.length > 1)
+		throw new Error('Invalid node \''+node.value+'\' with operator \'!\' and more than one child');
 
 	return node.children.find((child) => { return child.value === childValue; });
 };
