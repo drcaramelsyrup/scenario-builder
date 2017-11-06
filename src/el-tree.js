@@ -11,10 +11,7 @@ class ELTree {
 		this.root = new ELNode(rootValue);
 		this.root.isRoot = true;
 	}
-
-	insert(statement: string = '') {
-
-	}
+	
 }
 
 let ELTreeType: ELTree = new ELTree();
