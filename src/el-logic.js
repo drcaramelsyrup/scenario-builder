@@ -2,6 +2,9 @@
 import ELTree from './el-tree';
 import ELNode from './el-node';
 
+type ModalOperator = '.' | '!' | '';
+type ELFragment = { value: string, operator: ModalOperator };
+
 const satisfies = (tree: ELTree, statement: string) => {
 	return typeof retrieve(tree, statement) !== 'undefined';
 };
@@ -13,21 +16,26 @@ const claim = (tree: ELTree, statement: string) => {
 	if (treeRoot.value == null)
 		throw new Error('Root has no value');
 
-	const nodeValues = parseNodeValues(statement);
-	if (nodeValues.length === 0 || treeRoot.value !== nodeValues.shift())
+	const nodeFragments = parseNodeFragments(statement);
+	if (nodeFragments.length === 0 || treeRoot.value !== nodeFragments.shift().value)
 		return;
 
 	let node = treeRoot;
-	for (let i = 0; i < nodeValues.length; i++) {
+	for (let i = 0; i < nodeFragments.length; i++) {
 		if (typeof node === 'undefined')
 			throw new Error('undefined node when evaluating claim!');
 
-		const val = nodeValues[i];
-		let child = childWithValue(node, val);
+		const fragment = nodeFragments[i];
+		let child = matchingChild(node, fragment);
 
+		// Insert a new fragment if not yet claimed
 		if (typeof child === 'undefined') {
-			node.operator = '.';
-			let newChild = new ELNode(val);
+			node.operator = fragment.operator;
+			if (node.operator === '!') {
+				// Invalidate all previous children
+				node.children = [];
+			}
+			let newChild = new ELNode(fragment.value);
 			node.children.push(newChild);
 			node = newChild;
 			continue;
@@ -47,29 +55,37 @@ const children = (tree: ELTree, statement: string) => {
 	return retrieved.children.map((child) => child.value);
 };
 
-const retrieve = (tree: ELTree, nodeValue: string) => {
-	const nodeValues = parseNodeValues(nodeValue);
-	const rootValue = nodeValues.shift();
-	if (rootValue !== tree.root.value)
+const retrieve = (tree: ELTree, statement: string) => {
+	const nodeFragments = parseNodeFragments(statement);
+	const rootFragment = nodeFragments.shift();
+	if (rootFragment.value !== tree.root.value || rootFragment.operator !== '')
 		throw new Error('Could not find root node in tree!');
 
-	return retrieveNode(tree.root, nodeValues);
+	return retrieveNode(tree.root, nodeFragments);
 };
 
-const retrieveNode = (node: ELNode, childValues: Array<string> = []) => {
-	if (childValues.length === 0)
+const retrieveNode = (node: ELNode, childFragments: Array<ELFragment> = []) => {
+	if (childFragments.length === 0)
 		return node;
 
-	const childValue = childValues.shift();
-	const child = childWithValue(node, childValue);
+	const childFragment = childFragments.shift();
+	const child = satisfyingChild(node, childFragment);
 
 	if (typeof child === 'undefined')
 		return child;	// invalid node
 
-	return retrieveNode(child, childValues);
+	return retrieveNode(child, childFragments);
 };
 
-const childWithValue = (node: ELNode, childValue: string = '') => {
+const satisfyingChild = (node: ELNode, childFragment: ELFragment) => {
+	return findChild(node, childFragment, true);
+};
+
+const matchingChild = (node: ELNode, childFragment: ELFragment) => {
+	return findChild(node, childFragment, false);
+};
+
+const findChild = (node: ELNode, childFragment: ELFragment, bLeastUpperBound: boolean) => {
 	if (node.operator === '' && node.children.length !== 0)
 		throw new Error('Invalid node \''+node.value+'\' with empty operator and non-zero children');
 
@@ -82,11 +98,47 @@ const childWithValue = (node: ELNode, childValue: string = '') => {
 	if (node.operator === '!' && node.children.length > 1)
 		throw new Error('Invalid node \''+node.value+'\' with operator \'!\' and more than one child');
 
-	return node.children.find((child) => { return child.value === childValue; });
-};
+	// Child's parent operator should be satisfied by (or match) current operator
+	if (bLeastUpperBound && node.operator === '.' && childFragment.operator === '!')
+		return undefined;
+	else if (!bLeastUpperBound && node.operator !== childFragment.operator)
+		return undefined;
 
-const parseNodeValues = (statement: string) => {
-	return statement.split(/[.!]+/);
+	return node.children.find((child) => { return child.value === childFragment.value; });
+}
+
+const parseNodeFragments = (statement: string) => {
+	// Imperative version
+	// Run some testing to see how long each approach takes?
+	// let values = [];
+	// let operatorIdx = statement.search(/[.!]/);
+	// let prevIdx = 0;
+	// let next = statement;
+	// while (operatorIdx !== -1) {
+	// 	values.push({
+	// 		value: statement.slice(prevIdx, operatorIdx),
+	// 		operator: statement[operatorIdx]
+	// 	});
+	// 	prevIdx = operatorIdx;
+	// 	next = statement.slice(operatorIdx + 1);
+	// 	operatorIdx = prevIdx + next.search(/[.!]/);
+	// }
+	// values.push({ value: next, operator: '' });
+	// return values;
+
+	const values = statement.split(/[.!]/);
+ 	return values.map((word, idx) => {
+ 		const parentOperatorIdx = values.slice(0, idx).reduce((sum, val) => {
+			return sum + val.length + 1;
+		}, -1);
+		return {
+			operator: idx != 0
+				? ((statement[parentOperatorIdx]: any): ModalOperator)
+				: '', // remember to leave room for the empty operator at the start
+			value: word
+		};
+	});
+	
 };
 
 export { claim, children, satisfies };

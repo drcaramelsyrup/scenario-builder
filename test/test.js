@@ -138,6 +138,14 @@ describe('ELLogicModel', () => {
 				});
 			});
 		});
+
+		it('should model simple exclusive statements', () => {
+			claim(jill, 'jill.likes.jack');
+			claim(jill, 'jill.likes.clyde');
+			expect(children(jill, 'jill.likes')).to.include.members(['jack', 'clyde']);
+			claim(jill, 'jill.likes!lee');
+			expect(children(jill, 'jill.likes')).to.deep.equal(['lee']);
+		});
 	});
 
 
@@ -200,10 +208,10 @@ describe('ELLogicModel', () => {
 			expect(moodNode).to.have.a.property('operator', '');
 			moodNode.operator = '!';
 			moodNode.children.push(new ELNode('40'));
-			expect(satisfies(toby, 'toby.mood.cheerful!40')).to.be.true;
-			expect(satisfies(toby, 'toby.mood.cheerful.40')).to.be.true;
+			expect(satisfies(toby, 'toby.mood.cheerful!40'), 'exclusive is true').to.be.true;
+			expect(satisfies(toby, 'toby.mood.cheerful.40'), 'inclusive is true').to.be.true;
 			moodNode.children.push(new ELNode('30'));
-			expect(() => { satisfies(toby, 'toby.mood.cheerful!30'); }).to.throw();
+			expect(() => { satisfies(toby, 'toby.mood.cheerful!arbitrary'); }).to.throw();
 		});
 
 		it('should not satisfy exclusive statements on non-exclusive models', () => {

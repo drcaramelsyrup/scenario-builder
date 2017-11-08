@@ -31,6 +31,23 @@ const claimTests = [
 			'jill.has': ['pet'],
 			'jill.has.pet': ['dog', 'cat', 'fish']
 		}
+	}, {
+		name: 'Jill has only Fido',
+		statements: ['jill.has.pet.theBunnyThatFidoAte', 'jill.has.pet!Fido'],
+		result: {
+			'jill': ['has'],
+			'jill.has': ['pet'],
+			'jill.has.pet': ['Fido']
+		}
+	}, {
+		name: 'Jill has Fido and a zombie bunny',
+		statements: ['jill.has.pet!Fido.scared', 'jill.has.pet.zombieBunny!vengeful!30'],
+		result: {
+			'jill.has.pet': ['Fido', 'zombieBunny'],
+			'jill.has.pet.Fido': ['scared'],
+			'jill.has.pet.zombieBunny': ['vengeful'],
+			'jill.has.pet.zombieBunny!vengeful': ['30']
+		}
 	}
 ];
 
@@ -50,9 +67,13 @@ const satisfiesTests = [
 		satisfies: [['toby.has.pet', true], ['toby.has.pet.dog', true], ['toby.has.pet.cat', true],
 			['toby.has.pet.fish', false]]
 	}, {
-		name: "Toby is forgetful as a mood only",
+		name: "Toby is forgetful as a mood only, but not exclusively",
 		statements: ['toby.mood.forgetful'],
-		satisfies: [['toby.forgetful', false], ['toby.mood.forgetful', true]]
+		satisfies: [['toby.forgetful', false], ['toby.mood.forgetful', true], ['toby.mood!forgetful', false]]
+	}, {
+		name: "Toby is exclusively forgetful",
+		statements: ['toby.mood!forgetful'],
+		satisfies: [['toby.mood.forgetful', true], ['toby.mood!forgetful', true]]
 	}
 ];
 
