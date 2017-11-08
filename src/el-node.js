@@ -1,6 +1,5 @@
 /* @flow */ 
-
-type ModalOperator = '.' | '!' | '' ;
+import type {ModalOperator} from './el-types'
 
 class ELNode {
 

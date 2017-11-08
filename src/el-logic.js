@@ -1,8 +1,8 @@
 /* @flow */
 import ELTree from './el-tree';
 import ELNode from './el-node';
+import type {ModalOperator} from './el-types'
 
-type ModalOperator = '.' | '!' | '';
 type ELFragment = { value: string, operator: ModalOperator };
 
 const satisfies = (tree: ELTree, statement: string) => {
