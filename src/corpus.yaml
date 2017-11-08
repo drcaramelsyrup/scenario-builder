@@ -1,0 +1,41 @@
+# Matters of societal contribution: occupations or reputations.
+community:
+  -
+    id: 'occupation - baker'
+    preconditions:
+      - ['*.age.15', '>=']
+      - ['*.apprenticeship.baker']
+    postconditions:
+      - '*.occupation!baker'
+  -
+    id: 'occupation - reverend'
+    preconditions:
+      - ['*.age.18', '>=']
+      - ['*.beliefs.religious']
+    postconditions:
+      - '*.occupation!reverend'
+  -
+    id: 'apprenticeship - baker'
+    preconditions:
+      - ['*.age.11', '>=']
+    postconditions:
+      - '*.apprenticeship.baker'
+
+# Matters concerning others: gaining or losing family members or friends.
+relationships: []
+
+# Matters of luck: windfalls, misfortunes, and natural disasters.
+fate: []
+
+# Matters of personal change: conversion, loss of faith, a subtle or grand awakening.
+mindset: []
+
+# The wheel of time turns.
+engine:
+  -
+    id: 'age'
+    preconditions: []
+    postconditions:
+      - '*.age!(*.age+1)'
+
+# QUALITIES?
