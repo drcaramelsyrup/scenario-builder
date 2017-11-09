@@ -1,9 +1,43 @@
 /* @flow */
 import ELTree from './el-tree';
 import ELNode from './el-node';
-import type {ModalOperator} from './el-types'
+import Practice from './practice'
+import type { ModalOperator, Precondition, Postcondition } from './el-types'
 
 type ELFragment = { value: string, operator: ModalOperator };
+
+const practice = (tree: ELTree, practice: Practice, ...args: Array<string>) => {
+	if (preconditions(tree, practice, args))
+		postconditions(tree, practice, args);
+};
+
+const preconditions = (tree: ELTree, practice: Practice, args: Array<string> = []) => {
+	practice.preconditions.forEach((precondition) => {
+		if (!satisfies(tree, substitute(practice, precondition[0], args)))
+			return false;
+	});
+	return true;
+};
+
+const postconditions = (tree: ELTree, practice: Practice, args: Array<string> = []) => {
+	practice.postconditions.forEach((postcondition) => {
+		claim(tree, substitute(practice, postcondition, args));
+	});
+};
+
+const substitute = (practice: Practice, statement: string = '', args: Array<string> = []) => {
+	if (args.length < practice.args.length)
+		throw new Error('Practice expects '+practice.args.length+' arguments, only received '+args.length);
+
+	let substituted = statement;
+	args.forEach((arg, idx) => {
+		if (practice.args.includes(arg))
+			console.warn('At least one Practice argument is identical to the given argument! This might cause problems.');
+
+		substituted = substituted.replace(practice.args[idx], arg);
+	});
+	return substituted;
+};
 
 const satisfies = (tree: ELTree, statement: string) => {
 	return typeof retrieve(tree, statement) !== 'undefined';
@@ -108,24 +142,6 @@ const findChild = (node: ELNode, childFragment: ELFragment, bLeastUpperBound: bo
 }
 
 const parseNodeFragments = (statement: string) => {
-	// Imperative version
-	// Run some testing to see how long each approach takes?
-	// let values = [];
-	// let operatorIdx = statement.search(/[.!]/);
-	// let prevIdx = 0;
-	// let next = statement;
-	// while (operatorIdx !== -1) {
-	// 	values.push({
-	// 		value: statement.slice(prevIdx, operatorIdx),
-	// 		operator: statement[operatorIdx]
-	// 	});
-	// 	prevIdx = operatorIdx;
-	// 	next = statement.slice(operatorIdx + 1);
-	// 	operatorIdx = prevIdx + next.search(/[.!]/);
-	// }
-	// values.push({ value: next, operator: '' });
-	// return values;
-
 	const values = statement.split(/[.!]/);
  	return values.map((word, idx) => {
  		const parentOperatorIdx = values.slice(0, idx).reduce((sum, val) => {
@@ -141,4 +157,4 @@ const parseNodeFragments = (statement: string) => {
 	
 };
 
-export { claim, children, satisfies };
+export { claim, children, satisfies, practice, substitute };

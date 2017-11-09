@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import ELNode from '../lib/el-node';
 import ELTree from '../lib/el-tree';
-import { claim, children, satisfies } from '../lib/el-logic';
+import Practice from '../lib/practice'
+import { claim, children, satisfies, practice, substitute } from '../lib/el-logic';
 import { claimTests, satisfiesTests } from './test-data';
 
 const testInit = (tree, value) => {
@@ -225,6 +226,40 @@ describe('ELLogicModel', () => {
 			expect(satisfies(toby, 'toby.mood.confused!angry'), 'only angry').to.be.false;
 			moodNode.children.unshift();
 			expect(satisfies(toby, 'toby.mood.confused!angry'), 'only angry, even with one child').to.be.false;
+		});
+
+	});
+
+});
+
+describe('Generation', () => {
+
+	let maria = new ELTree('maria');
+	const ate = new Practice('ate', // function name
+		['A', 'X', 'Y'], // args
+		[['A']], // preconditions
+		['A.ate.X!Y']	// postconditions
+	);
+
+	beforeEach(() => {
+		maria = new ELTree('maria');
+	});
+
+	describe('#practice()', () => {
+		it('should replace variable arguments correctly', () => {
+			const newArgs = ['maria', 'pudding', 'spoon'];
+			expect(substitute(ate, ate.postconditions[0], newArgs)).to.equal('maria.ate.pudding!spoon');
+		});
+
+		it('should throw an error if not given enough arguments', () => {
+			const newArgs = ['maria', 'pudding'];
+			const invalidArgs = () => { substitute(ate, ate.postconditions[0], newArgs); };
+			expect(invalidArgs).to.throw();
+		});
+
+		it('should handle a simple practice with pre and post conditions', () => {
+			practice(maria, ate, 'maria', 'pudding', 'spoon');
+			expect(satisfies(maria, 'maria.ate.pudding!spoon')).to.be.true;
 		});
 	});
 

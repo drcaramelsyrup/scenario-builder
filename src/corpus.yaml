@@ -2,27 +2,37 @@
 community:
   -
     id: 'occupation - baker'
+    args: 'X'
     preconditions:
-      - ['*.age.15', '>=']
-      - ['*.apprenticeship.baker']
+      - ['X.age.15', '>=']
+      - ['X.apprenticeship.baker']
     postconditions:
-      - '*.occupation!baker'
+      - 'X.occupation!baker'
   -
     id: 'occupation - reverend'
+    args: 'X'
     preconditions:
-      - ['*.age.18', '>=']
-      - ['*.beliefs.religious']
-    postconditions:
-      - '*.occupation!reverend'
+      - ['X.age.18', '>=']
+      - ['X.beliefs.religious']
+    postconditions: 'X.occupation!reverend'
   -
     id: 'apprenticeship - baker'
+    args: 'X'
     preconditions:
-      - ['*.age.11', '>=']
-    postconditions:
-      - '*.apprenticeship.baker'
+      - ['X.age.11', '>=']
+    postconditions: 'X.apprenticeship.baker'
 
 # Matters concerning others: gaining or losing family members or friends.
-relationships: []
+relationships:
+  - 
+    id: 'marriage'
+    args:
+      - 'X'
+      - 'Y'
+    preconditions:
+      - ['X.age.10', '>=']
+    postconditions:
+      - ['X.married.Y']
 
 # Matters of luck: windfalls, misfortunes, and natural disasters.
 fate: []
@@ -34,8 +44,13 @@ mindset: []
 engine:
   -
     id: 'age'
-    preconditions: []
+    args: 
+      - 'X' # person
+      - 'A' # current age
+      - 'B' # new age
+    preconditions:
+      - ['X.age!A']
     postconditions:
-      - '*.age!(*.age+1)'
+      - 'X.age!B'
 
 # QUALITIES?
