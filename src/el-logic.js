@@ -2,21 +2,30 @@
 import ELTree from './el-tree';
 import ELNode from './el-node';
 import Practice from './practice'
-import type { ModalOperator, Precondition, Postcondition } from './el-types'
-
-type ELFragment = { value: string, operator: ModalOperator };
+import type { ModalOperator, Precondition, Compare, Postcondition } from './el-types';
+import type { ELFragment } from './el-utils';
+import { parseNodeFragments, matchingChild, satisfyingChild, retrieve } from './el-utils';
+import { PreconditionFns } from './el-conditions';
 
 const practice = (tree: ELTree, practice: Practice, ...args: Array<string>) => {
-	if (preconditions(tree, practice, args))
+	if (preconditions(tree, practice, args)) {
 		postconditions(tree, practice, args);
+		return true;
+	}
+	return false;
 };
 
 const preconditions = (tree: ELTree, practice: Practice, args: Array<string> = []) => {
-	practice.preconditions.forEach((precondition) => {
-		if (!satisfies(tree, substitute(practice, precondition[0], args)))
-			return false;
-	});
-	return true;
+	return practice.preconditions.reduce((result, precondition) => {
+		if (typeof precondition === 'string') {
+			if (!satisfies(tree, substitute(practice, precondition, args)))
+				return result && false;
+		} else {
+			if (!compare(tree, substitutedCompare(practice, precondition, args)))
+				return result && false;
+		}
+		return result && true;
+	}, true);
 };
 
 const postconditions = (tree: ELTree, practice: Practice, args: Array<string> = []) => {
@@ -39,6 +48,44 @@ const substitute = (practice: Practice, statement: string = '', args: Array<stri
 	return substituted;
 };
 
+const substitutedCompare = (practice: Practice, precondition: Compare, args: Array<string> = []): Compare => {
+	if (precondition.fn.length <= 1)
+		return precondition;	// nothing will change
+
+	// Callback function itself will verify arguments
+	const substituted = ({ fn: [], cmp: 0 }: Compare);
+	substituted.cmp = precondition.cmp;
+
+	substituted.fn = precondition.fn.map((statement: number | string, sIdx) => {
+		if (sIdx === 0)
+			return statement;	// function id
+		if (typeof statement !== 'string')
+			return statement;
+
+		return args.reduce((result, arg, idx) => {
+			if (practice.args.includes(arg))
+				console.warn('At least one Practice argument is identical to the given argument! This might cause problems.');
+
+			return result.replace(practice.args[idx], arg);
+		}, statement);
+	});
+	return substituted;
+}
+
+const compare = (tree: ELTree, precondition: Compare) => {
+	if (precondition.fn.length <= 0)
+		throw new Error('Invalid Compare Precondition with no data!');
+	const [ fnId, ...rest ] = precondition.fn;
+	if (typeof fnId !== 'string')
+		throw new Error('Expected first element of precondition fn to be function id');
+	const callback = PreconditionFns.get(fnId);
+	if (callback == null)
+		throw new Error('Precondition function \''+fnId+'\' does not exist');
+	console.log(callback(tree, ...rest));
+	console.log(callback(tree, ...rest) === precondition.cmp);
+	return callback(tree, ...rest) === precondition.cmp;
+};
+
 const satisfies = (tree: ELTree, statement: string) => {
 	return typeof retrieve(tree, statement) !== 'undefined';
 };
@@ -56,14 +103,14 @@ const claim = (tree: ELTree, statement: string) => {
 
 	let node = treeRoot;
 	for (let i = 0; i < nodeFragments.length; i++) {
-		if (typeof node === 'undefined')
+		if (node == null)
 			throw new Error('undefined node when evaluating claim!');
 
 		const fragment = nodeFragments[i];
 		let child = matchingChild(node, fragment);
 
 		// Insert a new fragment if not yet claimed
-		if (typeof child === 'undefined') {
+		if (child == null) {
 			node.operator = fragment.operator;
 			if (node.operator === '!') {
 				// Invalidate all previous children
@@ -83,78 +130,12 @@ const claim = (tree: ELTree, statement: string) => {
 const children = (tree: ELTree, statement: string) => {
 	const treeRoot = tree.root;
 	const retrieved = retrieve(tree, statement);
-	if (typeof retrieved === 'undefined')
+	if (retrieved == null)
 		throw new Error('Could not find node for \''+statement+'\' in tree '+treeRoot.value+'!');
 
 	return retrieved.children.map((child) => child.value);
 };
 
-const retrieve = (tree: ELTree, statement: string) => {
-	const nodeFragments = parseNodeFragments(statement);
-	const rootFragment = nodeFragments.shift();
-	if (rootFragment.value !== tree.root.value || rootFragment.operator !== '')
-		throw new Error('Could not find root node in tree!');
 
-	return retrieveNode(tree.root, nodeFragments);
-};
-
-const retrieveNode = (node: ELNode, childFragments: Array<ELFragment> = []) => {
-	if (childFragments.length === 0)
-		return node;
-
-	const childFragment = childFragments.shift();
-	const child = satisfyingChild(node, childFragment);
-
-	if (typeof child === 'undefined')
-		return child;	// invalid node
-
-	return retrieveNode(child, childFragments);
-};
-
-const satisfyingChild = (node: ELNode, childFragment: ELFragment) => {
-	return findChild(node, childFragment, true);
-};
-
-const matchingChild = (node: ELNode, childFragment: ELFragment) => {
-	return findChild(node, childFragment, false);
-};
-
-const findChild = (node: ELNode, childFragment: ELFragment, bLeastUpperBound: boolean) => {
-	if (node.operator === '' && node.children.length !== 0)
-		throw new Error('Invalid node \''+node.value+'\' with empty operator and non-zero children');
-
-	if (!(node.operator === '.' || node.operator === '!' || node.operator === ''))
-		throw new Error('Invalid node \''+node.value+'\' with unrecognized operator \''+node.operator+'\'');
-
-	if (node.children.length === 0 && (node.operator === '.' || node.operator === '!'))
-		throw new Error('Invalid node \''+node.value+'\' with operator \''+node.operator+'\' and no children');
-
-	if (node.operator === '!' && node.children.length > 1)
-		throw new Error('Invalid node \''+node.value+'\' with operator \'!\' and more than one child');
-
-	// Child's parent operator should be satisfied by (or match) current operator
-	if (bLeastUpperBound && node.operator === '.' && childFragment.operator === '!')
-		return undefined;
-	else if (!bLeastUpperBound && node.operator !== childFragment.operator)
-		return undefined;
-
-	return node.children.find((child) => { return child.value === childFragment.value; });
-}
-
-const parseNodeFragments = (statement: string) => {
-	const values = statement.split(/[.!]/);
- 	return values.map((word, idx) => {
- 		const parentOperatorIdx = values.slice(0, idx).reduce((sum, val) => {
-			return sum + val.length + 1;
-		}, -1);
-		return {
-			operator: idx != 0
-				? ((statement[parentOperatorIdx]: any): ModalOperator)
-				: '', // remember to leave room for the empty operator at the start
-			value: word
-		};
-	});
-	
-};
 
 export { claim, children, satisfies, practice, substitute };

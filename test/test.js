@@ -237,8 +237,23 @@ describe('Generation', () => {
 	let maria = new ELTree('maria');
 	const ate = new Practice('ate', // function name
 		['A', 'X', 'Y'], // args
-		[['A']], // preconditions
+		['A'], // preconditions
 		['A.ate.X!Y']	// postconditions
+	);
+	const tooManyWildcards = new Practice('invalid',
+		['A', 'X'],
+		[{ fn: ['identity', 'A.*.*'], cmp: 0}],
+		['A.ate.X']
+	);
+	const levelUpFromOne = new Practice('levelUpFromOne',
+		['A', 'Y'],
+		[{ fn: ['identity', 'A.level!*'], cmp: 1 }],
+		['A.level!Y']
+	);
+	const ride = new Practice('ride',
+		['A', 'R'],
+		[{ fn: ['greaterThan', 'A.height!*', 30], cmp: 1 }],
+		['A.rode.R']
 	);
 
 	beforeEach(() => {
@@ -261,6 +276,25 @@ describe('Generation', () => {
 			practice(maria, ate, 'maria', 'pudding', 'spoon');
 			expect(satisfies(maria, 'maria.ate.pudding!spoon')).to.be.true;
 		});
+
+		it('should throw an error with invalid practices and conditions', () => {
+			expect(() => {
+				practice(maria, tooManyWildcards, 'maria', 'pudding');
+			}).to.throw();
+		});
+
+		it('should handle a practice with an identity precondition', () => {
+			claim(maria, 'maria.level!1');
+			practice(maria, levelUpFromOne, 'maria', '2');
+			expect(satisfies(maria, 'maria.level!2'), 'satisfies preconditions').to.be.true;
+			expect(practice(maria, levelUpFromOne, 'maria', '3'), 'does not satisfy precondition').to.be.false;
+			expect(satisfies(maria, 'maria.level!3'), 'did not execute failed practice').to.be.false;
+		});
+
+		it('should handle a practice with a greater than (or equal) precondition');
+		it('should handle a practice with a less than (or equal) precondition');
+		it('should handle a practice with multiple preconditions and postconditions');
+
 	});
 
 });

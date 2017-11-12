@@ -2,40 +2,55 @@
 community:
   -
     id: 'occupation - baker'
-    args: 'X'
+    args: '$X'
     preconditions:
-      - ['X.age.15', '>=']
-      - ['X.apprenticeship.baker']
+      - ['$X.age.15', '>=']
+      - ['$X.apprenticeship.baker']
     postconditions:
-      - 'X.occupation!baker'
+      - '$X.occupation!baker.specialty.{bread|croissants|pastries}'
+    phrase: '$X opened up a bakery.'
   -
     id: 'occupation - reverend'
-    args: 'X'
+    args: '$X'
     preconditions:
-      - ['X.age.18', '>=']
-      - ['X.beliefs.religious']
-    postconditions: 'X.occupation!reverend'
+      - ['$X.age.18', '>=']
+      - ['$X.beliefs.religious']
+    postconditions: '$X.occupation!reverend'
+    phrase: '$X now comforts the lost and aimless as a reverend.'
   -
     id: 'apprenticeship - baker'
-    args: 'X'
+    args: '$X'
     preconditions:
-      - ['X.age.11', '>=']
-    postconditions: 'X.apprenticeship.baker'
+      - ['$X.age.11', '>=']
+    postconditions: '$X.apprenticeship.baker'
+    phrase: '$X started an apprenticeship as a baker.'
 
 # Matters concerning others: gaining or losing family members or friends.
 relationships:
   - 
     id: 'marriage'
     args:
-      - 'X'
-      - 'Y'
+      - '$X'
+      - '$Y'
     preconditions:
-      - ['X.age.10', '>=']
+      - ['$X.age.10', '>=']
     postconditions:
-      - ['X.married.Y']
+      - '$X.married.$Y'
+    phrase: '$X is now wedded to $Y – wish them lifelong happiness...'
 
 # Matters of luck: windfalls, misfortunes, and natural disasters.
-fate: []
+fate:
+  -
+    id: 'theft'
+    args:
+      - '$X'
+      - '$A'
+      - '$B'
+    preconditions:
+      - ['$X.money.$A', '>=']
+    postconditions:
+      - '$X.money.$B'
+    phrase: 'Someone has robbed $X of their money!'
 
 # Matters of personal change: conversion, loss of faith, a subtle or grand awakening.
 mindset: []
@@ -45,12 +60,12 @@ engine:
   -
     id: 'age'
     args: 
-      - 'X' # person
-      - 'A' # current age
-      - 'B' # new age
+      - '$X' # person
+      - '$A' # current age
+      - '$B' # new age
     preconditions:
-      - ['X.age!A']
+      - ['$X.age!$A']
     postconditions:
-      - 'X.age!B'
+      - '$X.age!$B'
 
-# QUALITIES?
+# QU$ALITIES?

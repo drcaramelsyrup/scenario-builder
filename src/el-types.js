@@ -1,13 +1,12 @@
 /* @flow */
 
 export type ModalOperator = '.' | '!' | '';
-export type Precondition = Array<string>;
-// Precondition = {
-// 	PreconditionType: 'sat' | 'fn',
-// 	statement: '',
-// 	callback: [args, callbackName],
-// 	compare: 0
-// }
+export type Compare = {|
+	fn: Array<number | string>,
+	cmp: mixed
+|}
+export type Precondition = string | Compare;
+
 // callbacks:
 // Identity
 // GreaterThan
@@ -16,3 +15,4 @@ export type Precondition = Array<string>;
 // GreaterOrEqual
 // LessOrEqual
 export type Postcondition = string;
+
