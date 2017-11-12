@@ -81,8 +81,6 @@ const compare = (tree: ELTree, precondition: Compare) => {
 	const callback = PreconditionFns.get(fnId);
 	if (callback == null)
 		throw new Error('Precondition function \''+fnId+'\' does not exist');
-	console.log(callback(tree, ...rest));
-	console.log(callback(tree, ...rest) === precondition.cmp);
 	return callback(tree, ...rest) === precondition.cmp;
 };
 
