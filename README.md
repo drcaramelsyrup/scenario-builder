@@ -10,3 +10,7 @@ Built off of:
 Inspiration from 
 - [Versu](https://versu.com) (Richard Evans, Emily Short).
 - @sequitur's [Improv](https://github.com/sequitur/improv).
+
+`npm install` to install dependencies,
+`npm test` to run unit tests,
+`npm start` to (eventually) generate events

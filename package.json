@@ -10,7 +10,8 @@
 		"build": "babel src -d lib",
 		"start": "node dist/generate.js",
 		"test": "npm run build && mocha --full-trace -r flow-remove-types/register -r babel-register",
-		"flow": "flow"
+		"flow": "flow",
+		"clean": "rm -r lib/ node_modules/"
 	},
 	"dependencies": {
 		"fs-jetpack": "^1.2.0",
