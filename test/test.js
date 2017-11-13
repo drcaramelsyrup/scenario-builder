@@ -252,8 +252,25 @@ describe('Generation', () => {
 	);
 	const ride = new Practice('ride',
 		['A', 'R'],
-		[{ fn: ['greaterThan', 'A.height!*', 30], cmp: 1 }],
+		[{ fn: ['greater', 'A.height!*', 30], cmp: 1 }],
 		['A.rode.R']
+	);
+	const quincenera = new Practice('quincenera',
+		['A'],
+		[{ fn: ['equals', 'A.age!*', 15], cmp: 1 },
+		 { fn: ['same', 'A.status.*', 'adult'], cmp: 0 }],
+		['A.celebrated', 'A.status.adult']
+	);
+	const rideGreaterEquals = new Practice('ride',
+		['A', 'R'],
+		[{ fn: ['greaterEq', 'A.height!*', 30], cmp: 1 }],
+		['A.rode.R']
+	);
+	const kiddie = new Practice('rideKiddieSwing',
+		['A', 'R'],
+		[{ fn: ['less', 'A.age!*', 18], cmp: 1 },
+		 { fn: ['lessEq', 'A.height!*', 20], cmp: 1 }],
+		['A.swungOn.R']
 	);
 
 	beforeEach(() => {
@@ -291,7 +308,7 @@ describe('Generation', () => {
 			expect(satisfies(maria, 'maria.level!3'), 'did not execute failed practice').to.be.false;
 		});
 
-		it('should handle a practice with a greater than (or equal) precondition', () => {
+		it('should handle a practice with a greater than precondition', () => {
 			claim(maria, 'maria.height!20');
 			practice(maria, ride, 'maria', 'hydroblaster');
 			expect(satisfies(maria, 'maria.rode.hydroblaster'), 'does not satisfy').to.be.false;
@@ -299,10 +316,39 @@ describe('Generation', () => {
 			practice(maria, ride, 'maria', 'hydroblaster');
 			expect(satisfies(maria, 'maria.rode.hydroblaster'), 'satisfies height').to.be.true;
 		});
-		
-		it('should handle a practice with a less than (or equal) precondition');
-		it('should handle a practice with multiple preconditions and postconditions');
 
+		it('should handle a practice with an equals and same precondition', () => {
+			claim(maria, 'maria.age!14');
+			practice(maria, quincenera, 'maria');
+			expect(satisfies(maria, 'maria.celebrated')).to.be.false;
+			claim(maria, 'maria.age!15');
+			practice(maria, quincenera, 'maria');
+			expect(satisfies(maria, 'maria.celebrated')).to.be.true;
+			expect(practice(maria, quincenera, 'maria')).to.be.false;
+		});
+
+		it('should handle a practice with greater than or equals precondition', () => {
+			claim(maria, 'maria.height!29');
+			practice(maria, rideGreaterEquals, 'maria', 'thundermountain');
+			expect(satisfies(maria, 'maria.rode.thundermountain')).to.be.false;
+			claim(maria, 'maria.height!30');
+			practice(maria, rideGreaterEquals, 'maria', 'thundermountain');
+			expect(satisfies(maria, 'maria.rode.thundermountain')).to.be.true;
+		});
+		
+		it('should handle a practice with a less than (or equal) precondition', () => {
+			claim(maria, 'maria.age!20');
+			claim(maria, 'maria.height!20');
+			practice(maria, kiddie, 'maria', 'chocomonster');
+			expect(satisfies(maria, 'maria.swungOn.chocomonster')).to.be.false;
+			claim(maria, 'maria.age!16');
+			practice(maria, kiddie, 'maria', 'chocomonster');
+			expect(satisfies(maria, 'maria.swungOn.chocomonster')).to.be.true;
+		});
+
+	});
+
+	describe('#generate()', () => {
 	});
 
 });

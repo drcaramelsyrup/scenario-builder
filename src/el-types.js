@@ -7,12 +7,5 @@ export type Compare = {|
 |}
 export type Precondition = string | Compare;
 
-// callbacks:
-// Identity
-// GreaterThan
-// Equal
-// LessThan
-// GreaterOrEqual
-// LessOrEqual
 export type Postcondition = string;
 

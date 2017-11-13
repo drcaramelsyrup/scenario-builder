@@ -19,10 +19,10 @@ const preconditions = (tree: ELTree, practice: Practice, args: Array<string> = [
 	return practice.preconditions.reduce((result, precondition) => {
 		if (typeof precondition === 'string') {
 			if (!satisfies(tree, substitute(practice, precondition, args)))
-				return result && false;
+				return false;
 		} else {
 			if (!compare(tree, substitutedCompare(practice, precondition, args)))
-				return result && false;
+				return false;
 		}
 		return result && true;
 	}, true);

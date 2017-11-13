@@ -13,23 +13,71 @@ const variableIndices = (...args): Array<Number> => {
 	}, []);
 };
 
-const greaterThan = (tree: ELTree, ...variables): number => {
+const same = (tree: ELTree, ...variables): number => {
 	if (variables.length !== 2)
-		throw new Error('Greater than expected 2 variables but got '+variables.length);
+		throw new Error('String compare expected 2 variables but got '+variables.length);
 
 	const resolved: Resolution = resolve(tree, ...variables);
 	if (resolved.length !== 2)
-		throw new Error('Greater than expected 2 resolutions, got '+resolved.length);
+		throw new Error('String compare expected 2 resolutions, got '+resolved.length);
+	const resolution: Array<string | number> | string | number = resolved[0];
+	const cmp = resolved[1];
+	if (typeof resolution === 'number' || typeof cmp === 'number')
+		throw new Error('String compare, but got a number');
+	if (typeof resolution === 'string')
+		return resolution === cmp ? 1 : 0;
+	return resolution.reduce((result, curr) => {
+		return curr === cmp || result;
+	}, false) ? 1 : 0;
+};
+
+const less = (tree: ELTree, ...variables): number => {
+	return numericalCompare((val: number, cmp: number): boolean => {
+		return val < cmp;
+	}, tree, ...variables);
+};
+
+const lessEq = (tree: ELTree, ...variables): number => {
+	return numericalCompare((val: number, cmp: number): boolean => {
+		return val <= cmp;
+	}, tree, ...variables);
+};
+
+const equals = (tree: ELTree, ...variables): number => {
+	return numericalCompare((val: number, cmp: number): boolean => {
+		return val === cmp;
+	}, tree, ...variables);
+};
+
+const greater = (tree: ELTree, ...variables): number => {
+	return numericalCompare((val: number, cmp: number): boolean => {
+		return val > cmp;
+	}, tree, ...variables);
+};
+
+const greaterEq = (tree: ELTree, ...variables): number => {
+	return numericalCompare((val: number, cmp: number): boolean => {
+		return val >= cmp;
+	}, tree, ...variables);
+};
+
+const numericalCompare = (fn: (number, number) => boolean, tree: ELTree, ...variables): number => {
+	if (variables.length !== 2)
+		throw new Error('Numerical compare expected 2 variables but got '+variables.length);
+
+	const resolved: Resolution = resolve(tree, ...variables);
+	if (resolved.length !== 2)
+		throw new Error('Numerical compare expected 2 resolutions, got '+resolved.length);
 	const resolution: Array<string | number> | string | number = resolved[0];
 	const cmp = resolved[1];
 	if (typeof resolution === 'string' || typeof cmp !== 'number')
-		throw new Error('Greater than expected a numerical resolution');
+		throw new Error('Numerical compare expected a numerical resolution');
 	if (typeof resolution === 'number')
-		return resolution > cmp ? 1 : 0;
+		return fn(resolution, cmp) ? 1 : 0;
 
-	return resolution.reduce((result, curr) => {
+	return fn(resolution.reduce((result, curr) => {
 		return typeof curr === 'number' ? Math.max(result, curr) : result;
-	}, -Infinity) > cmp ? 1 : 0;
+	}, -Infinity), cmp) ? 1 : 0;
 };
 
 const identity = (tree: ELTree, ...variables): mixed => {
@@ -94,8 +142,13 @@ const opSatisfies = (requestedOp: ModalOperator, toSatisfyOp: ModalOperator): bo
 };
 
 const PreconditionFns : Map<string, (ELTree, ...args: Array<mixed>) => mixed> = new Map(
-	[['identity', identity],
-	 ['greaterThan', greaterThan]]
+	[
+		['identity', identity],
+		['greater', greater], ['greaterEq', greaterEq],
+		['less', less], ['lessEq', lessEq],
+		['equals', equals],
+		['same', same]
+	]
 );
 
 export { PreconditionFns };
