@@ -9,7 +9,7 @@
 	"scripts": {
 		"build": "babel src -d lib",
 		"start": "node dist/generate.js",
-		"test": "npm run build && mocha -r flow-remove-types/register -r babel-register",
+		"test": "npm run build && mocha --full-trace -r flow-remove-types/register -r babel-register",
 		"flow": "flow"
 	},
 	"dependencies": {

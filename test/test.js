@@ -291,7 +291,15 @@ describe('Generation', () => {
 			expect(satisfies(maria, 'maria.level!3'), 'did not execute failed practice').to.be.false;
 		});
 
-		it('should handle a practice with a greater than (or equal) precondition');
+		it('should handle a practice with a greater than (or equal) precondition', () => {
+			claim(maria, 'maria.height!20');
+			practice(maria, ride, 'maria', 'hydroblaster');
+			expect(satisfies(maria, 'maria.rode.hydroblaster'), 'does not satisfy').to.be.false;
+			claim(maria, 'maria.height!40');
+			practice(maria, ride, 'maria', 'hydroblaster');
+			expect(satisfies(maria, 'maria.rode.hydroblaster'), 'satisfies height').to.be.true;
+		});
+		
 		it('should handle a practice with a less than (or equal) precondition');
 		it('should handle a practice with multiple preconditions and postconditions');
 
