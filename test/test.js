@@ -1,9 +1,11 @@
 import { expect } from 'chai';
 import ELNode from '../lib/el-node';
 import ELTree from '../lib/el-tree';
-import Practice from '../lib/practice'
+import Practice from '../lib/practice';
 import { claim, children, satisfies, practice, substitute } from '../lib/el-logic';
 import { claimTests, satisfiesTests } from './test-data';
+import { createPractices } from '../lib/generate';
+
 
 const testInit = (tree, value) => {
 	expect(tree.root).to.have.a.property('value', value);
@@ -348,7 +350,24 @@ describe('Generation', () => {
 
 	});
 
+	describe('#parse()', () => {
+		const practices = createPractices('test/test-corpus.yaml');
+		expect(practices).to.have.own.property('relationships');
+		expect(practices).to.have.own.property('fate');
+		expect(practices).to.have.own.property('engine');
+		expect(practices['fate']).to.deep.include(
+			new Practice(
+				'theft',
+				['$X', '$A', '$B'],
+				[{ fn: ['greaterEq', '$X.money.*', '$A'], cmp: 1 }],
+				['$X.money.$B'],
+				'Someone has robbed $X of their money!'
+			)
+		);
+	});
+
 	describe('#generate()', () => {
+		const practices = createPractices('test/test-corpus.yaml');
 	});
 
 });

@@ -1,0 +1,41 @@
+# Matters concerning others: gaining or losing family members or friends.
+relationships:
+  - 
+    id: 'marriage'
+    args:
+      - '$X'
+      - '$Y'
+    preconditions:
+      -
+        fn: ['greaterEq', '$X.age.*', '10']
+        cmp: 1
+    postconditions:
+      - '$X.married.$Y'
+    phrase: '$X is now wedded to $Y – wish them lifelong happiness...'
+# Matters of luck: windfalls, misfortunes, and natural disasters.
+fate:
+  -
+    id: 'theft'
+    args:
+      - '$X'
+      - '$A'
+      - '$B'
+    preconditions:
+      - 
+        fn: ['greaterEq', '$X.money.*', '$A']
+        cmp: 1
+    postconditions:
+      - '$X.money.$B'
+    phrase: 'Someone has robbed $X of their money!'
+# The wheel of time turns.
+engine:
+  -
+    id: 'age'
+    args: 
+      - '$X' # person
+      - '$A' # current age
+      - '$B' # new age
+    preconditions:
+      - '$X.age!$A'
+    postconditions:
+      - '$X.age!$B'

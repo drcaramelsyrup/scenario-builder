@@ -24,7 +24,6 @@ community:
       - ['$X.age.11', '>=']
     postconditions: '$X.apprenticeship.baker'
     phrase: '$X started an apprenticeship as a baker.'
-
 # Matters concerning others: gaining or losing family members or friends.
 relationships:
   - 
@@ -37,7 +36,6 @@ relationships:
     postconditions:
       - '$X.married.$Y'
     phrase: '$X is now wedded to $Y – wish them lifelong happiness...'
-
 # Matters of luck: windfalls, misfortunes, and natural disasters.
 fate:
   -
@@ -51,10 +49,8 @@ fate:
     postconditions:
       - '$X.money.$B'
     phrase: 'Someone has robbed $X of their money!'
-
 # Matters of personal change: conversion, loss of faith, a subtle or grand awakening.
-mindset: []
-
+# mindset: []
 # The wheel of time turns.
 engine:
   -
@@ -68,4 +64,3 @@ engine:
     postconditions:
       - '$X.age!$B'
 
-# QU$ALITIES?

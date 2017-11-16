@@ -7,12 +7,14 @@ class Practice {
 	args: Array<string>;
 	preconditions: Array<Precondition>;
 	postconditions: Array<Postcondition>;
+	phrase: string;
 
-	constructor(id: string, args: Array<string> = [], preconditions: Array<Precondition> = [], postconditions: Array<Postcondition> = []) {
+	constructor(id: string, args: Array<string> = [], preconditions: Array<Precondition> = [], postconditions: Array<Postcondition> = [], phrase: string = '') {
 		this.id = id;
 		this.args = args;
 		this.preconditions = preconditions;
 		this.postconditions = postconditions;
+		this.phrase = phrase;
 	}
 
 }
